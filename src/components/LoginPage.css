@@ -1,0 +1,43 @@
+.login-container {
+  height: 100vh;
+  width: 100%;
+  background-image: url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  flex-direction: column;   /* ADD THIS */
+  justify-content: center;
+  align-items: center;
+}
+.app-title {
+  color: white;
+  font-size: 42px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 5px black;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
+}
+
+.login-card input {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+}
+
+.login-card button {
+  width: 100%;
+  padding: 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+}

@@ -20,44 +20,44 @@ function LoginPage() {
     if (error) {
       alert(error.message);
     } else {
-      navigate("/dashboard");
+      navigate("/home");
     }
   };
 
- return (
-  <div className="login-container">
+  return (
+    <div className="login-container">
 
-    {/* APP NAME */}
-    <h1 className="app-title">Fitness Tracker</h1>
+      {/* APP NAME */}
+      <h1 className="app-title">Fitness Tracker</h1>
 
-    <div className="login-card">
-      <h2>Login</h2>
+      <div className="login-card">
+        <h2>Login</h2>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          required
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            required
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          type="password"
-          placeholder="Password"
-          required
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <input
+            type="password"
+            placeholder="Password"
+            required
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button type="submit">Sign In</button>
-      </form>
+          <button type="submit">Sign In</button>
+        </form>
 
-      <p>
-        Don't have an account?
-        <Link to="/signup"> Sign Up</Link>
-      </p>
+        <p>
+          Don't have an account?
+          <Link to="/signup"> Sign Up</Link>
+        </p>
 
+      </div>
     </div>
-  </div>
-);
+  );
 }
 export default LoginPage;

@@ -1,0 +1,75 @@
+.create-goal-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 70px);
+    background-color: #f4f6f9;
+    padding: 2rem;
+}
+
+.create-goal-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 500px;
+}
+
+.create-goal-card h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.create-goal-card .form-group {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.create-goal-card label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #555;
+    text-align: left;
+}
+
+.create-goal-card select,
+.create-goal-card input {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.create-goal-card select:focus,
+.create-goal-card input:focus {
+    border-color: #007bff;
+}
+
+.create-goal-card button {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.2s;
+}
+
+.create-goal-card button:hover {
+    background-color: #0056b3;
+}
+
+.create-goal-card button:disabled {
+    background-color: #a0c4ff;
+    cursor: not-allowed;
+}

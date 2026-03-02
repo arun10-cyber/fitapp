@@ -1,0 +1,86 @@
+.home {
+  padding: 50px;
+  text-align: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4e73df, #1cc88a);
+  color: white;
+}
+
+/* Wrapper */
+.slider-wrapper {
+  position: relative;
+  margin-top: 40px;
+}
+
+/* Cards container */
+.home-cards {
+  display: flex;
+  overflow-x: auto;
+  gap: 25px;
+  scroll-behavior: smooth;
+  padding: 20px 40px;
+}
+
+.home-cards::-webkit-scrollbar {
+  display: none;
+}
+
+/* Premium Cards */
+.home-card {
+  min-width: 320px;
+  height: 200px;
+  background: white;
+  color: #333;
+  padding: 25px;
+  border-radius: 8px;
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  transition: 0.4s;
+}
+
+.home-card:hover {
+  transform: translateY(-10px);
+}
+
+/* Arrow Buttons */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  font-size: 24px;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.left {
+  left: 0;
+}
+
+.right {
+  right: 0;
+}
+
+.home-card.card-workout {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../assets/workout_bg.png') center/cover no-repeat !important;
+  color: white !important;
+}
+
+.home-card.card-suggestions {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../assets/suggestions_bg.png') center/cover no-repeat !important;
+  color: white !important;
+}
+
+.home-card.card-burn {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../assets/burn_bg.png') center/cover no-repeat !important;
+  color: white !important;
+}
+
+.home-card.card-progress {
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../assets/progress_bg.png') center/cover no-repeat !important;
+  color: white !important;
+}

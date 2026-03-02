@@ -17,10 +17,13 @@ const Navbar = () => {
       <h2 className="logo">Fitness Tracker</h2>
 
       <div className="nav-links">
-        <button onClick={()=>navigate("/dashboard")}>Dashboard</button>
-        <button onClick={()=>navigate("/workout")}>Workouts</button>
-        <button onClick={()=>navigate("/goals")}>Goals</button>
-        <button onClick={()=>navigate("/profile")}>Profile</button>
+        <button onClick={() => navigate("/home")}>Home</button>
+        <button onClick={() => navigate("/dashboard")}>Dashboard</button>
+        <button onClick={() => navigate("/fitness")}>Fitness</button>
+        <button onClick={() => navigate("/health-metrics")}>Health</button>
+        <button onClick={() => navigate("/workout")}>Workouts</button>
+        <button onClick={() => navigate("/create-goal")}>Goals</button>
+        <button onClick={() => navigate("/profile")}>Profile</button>
         <button className="logout" onClick={handleLogout}>Log Out</button>
       </div>
     </div>

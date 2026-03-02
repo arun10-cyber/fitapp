@@ -5,6 +5,13 @@ import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import Dashboard from "./components/Dashboard";
 import Profile from "./components/Profile";
+import Home from "./components/Home";
+import WorkoutPage from "./components/WorkoutPage";
+import WorkoutDetail from "./components/WorkoutDetail";
+import CreateGoal from "./components/CreateGoal";
+import ProgressChart from "./components/ProgressChart";
+import Fitness from "./components/Fitness";
+import HealthMetrics from "./components/HealthMetrics";
 
 const App = () => {
 
@@ -31,15 +38,18 @@ const App = () => {
   return (
     <Router>
       <Routes>
-
+        <Route
+          path="/home"
+          element={session ? <Home /> : <Navigate to="/" />}
+        />
         <Route
           path="/"
-          element={session ? <Navigate to="/dashboard" /> : <LoginPage />}
+          element={session ? <Navigate to="/home" /> : <LoginPage />}
         />
 
         <Route
           path="/signup"
-          element={session ? <Navigate to="/dashboard" /> : <SignupPage />}
+          element={session ? <Navigate to="/home" /> : <SignupPage />}
         />
 
         <Route
@@ -47,10 +57,33 @@ const App = () => {
           element={session ? <Dashboard /> : <Navigate to="/" />}
         />
         <Route
-        path="/profile"
-        element={session ? <Profile /> : <Navigate to="/" />}
+          path="/profile"
+          element={session ? <Profile /> : <Navigate to="/" />}
         />
-
+        <Route
+          path="/workout"
+          element={session ? <WorkoutPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/workout/:id"
+          element={session ? <WorkoutDetail /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/create-goal"
+          element={session ? <CreateGoal /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/progress"
+          element={session ? <ProgressChart /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/fitness"
+          element={session ? <Fitness /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/health-metrics"
+          element={session ? <HealthMetrics /> : <Navigate to="/" />}
+        />
       </Routes>
     </Router>
   );

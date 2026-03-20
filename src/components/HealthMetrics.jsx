@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import { supabase } from "./SupaCon";
 import { useNavigate } from "react-router-dom";
+import "./FormInput.css";
 
 const HealthMetrics = () => {
   const navigate = useNavigate();
@@ -64,21 +65,30 @@ const HealthMetrics = () => {
 
     let error;
 
+    // Only send weight - DB trigger calculates BMI & metabolic_rate automatically
+    const parsedWeight = parseFloat(weight);
+
     if (existing) {
       ({ error } = await supabase
         .from("health_metrics")
-        .update({ weight: parseFloat(weight) })
+        .update({ weight: parsedWeight })
         .eq("profile_id", profile.profile_id)
         .eq("recorded_date", today));
     } else {
       ({ error } = await supabase
         .from("health_metrics")
         .insert([{
-          weight: parseFloat(weight),
+          weight: parsedWeight,
           recorded_date: today,
           profile_id: profile.profile_id
         }]));
     }
+
+    // Also update master profile weight
+    await supabase
+      .from("profile")
+      .update({ weight: parseFloat(weight) })
+      .eq("profile_id", profile.profile_id);
 
     if (error) {
       alert(error.message);
@@ -91,29 +101,32 @@ const HealthMetrics = () => {
   return (
     <div>
       <Navbar />
-      <div style={{ padding: "100px 20px", textAlign: "center" }}>
-        <h2>Today's Health Metrics</h2>
+      <div className="natural-form-wrapper" style={{ padding: "100px 20px", textAlign: "center" }}>
+        <div className="natural-form-container">
+          <h2>Today's Health Metrics</h2>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="number"
-            step="0.1"
-            placeholder="Weight (kg)"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            required
-          />
-          <br /><br />
-          <button type="submit">Save / Update</button>
-        </form>
+          <form onSubmit={handleSubmit} className="natural-form">
+            <input
+              type="number"
+              step="0.1"
+              placeholder="Weight (kg)"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              required
+              className="natural-input"
+            />
+            <br /><br />
+            <button type="submit" className="natural-btn">Save / Update</button>
+          </form>
 
-        {todayRecord && (
-          <div style={{ marginTop: "30px" }}>
-            <h3>Calculated Results</h3>
-            <p><strong>BMI:</strong> {todayRecord.bmi?.toFixed(2)}</p>
-            <p><strong>Metabolic Rate:</strong> {todayRecord.metabolic_rate?.toFixed(2)} kcal/day</p>
-          </div>
-        )}
+          {todayRecord && (
+            <div className="results-box" style={{ marginTop: "30px", padding: "20px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+              <h3 style={{ margin: "0 0 15px 0", color: "#1e293b" }}>Calculated Results</h3>
+              <p style={{ margin: "5px 0", color: "#475569" }}><strong>BMI:</strong> {todayRecord.bmi ? todayRecord.bmi.toFixed(2) : "0.00"}</p>
+              <p style={{ margin: "5px 0", color: "#475569" }}><strong>Metabolic Rate:</strong> {todayRecord.metabolic_rate ? todayRecord.metabolic_rate.toFixed(2) : "0.00"} kcal/day</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ console.log("Logged user id:", user.id);
                             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                 <input
                                     type="number"
-                                    placeholder={`e.g. ${goalType === "Weight loss" ? "5" :
+                                    placeholder={`e.g. ${goalType === "Weight loss" ? "60" :
                                             goalType === "Steps" ? "10000" :
                                                 goalType === "Calories" ? "500" :
                                                     goalType === "Water intake" ? "3" :

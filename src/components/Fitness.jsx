@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import { supabase } from "./SupaCon";
 import { useNavigate } from "react-router-dom";
+import "./FormInput.css";
 
 const Fitness = () => {
   const navigate = useNavigate();
@@ -105,32 +106,34 @@ const Fitness = () => {
   return (
     <div>
       <Navbar />
-      <div style={{ padding: "100px 20px", textAlign: "center" }}>
-        <h2>Today's Fitness</h2>
+      <div className="natural-form-wrapper" style={{ padding: "100px 20px", textAlign: "center" }}>
+        <div className="natural-form-container">
+          <h2>Today's Fitness</h2>
 
-        <form onSubmit={handleSubmit}>
-          <input type="number" placeholder="Steps"
-            value={steps}
-            onChange={(e) => setSteps(e.target.value)}
-            required /><br /><br />
+          <form onSubmit={handleSubmit} className="natural-form">
+            <input type="number" placeholder="Steps"
+              value={steps}
+              onChange={(e) => setSteps(e.target.value)}
+              required className="natural-input" /><br /><br />
 
-          <input type="number" step="0.1" placeholder="Distance (km)"
-            value={distance}
-            onChange={(e) => setDistance(e.target.value)}
-            required /><br /><br />
+            <input type="number" step="0.1" placeholder="Distance (km)"
+              value={distance}
+              onChange={(e) => setDistance(e.target.value)}
+              required className="natural-input" /><br /><br />
 
-          <input type="number" step="0.1" placeholder="Water Intake (L)"
-            value={water}
-            onChange={(e) => setWater(e.target.value)}
-            required /><br /><br />
+            <input type="number" step="0.1" placeholder="Water Intake (L)"
+              value={water}
+              onChange={(e) => setWater(e.target.value)}
+              required className="natural-input" /><br /><br />
 
-          <input type="number" step="0.1" placeholder="Sleep (hours)"
-            value={sleep}
-            onChange={(e) => setSleep(e.target.value)}
-            required /><br /><br />
+            <input type="number" step="0.1" placeholder="Sleep (hours)"
+              value={sleep}
+              onChange={(e) => setSleep(e.target.value)}
+              required className="natural-input" /><br /><br />
 
-          <button type="submit">Save / Update</button>
-        </form>
+            <button type="submit" className="natural-btn">Save / Update</button>
+          </form>
+        </div>
       </div>
     </div>
   );

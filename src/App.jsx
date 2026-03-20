@@ -12,6 +12,7 @@ import CreateGoal from "./components/CreateGoal";
 import ProgressChart from "./components/ProgressChart";
 import Fitness from "./components/Fitness";
 import HealthMetrics from "./components/HealthMetrics";
+import Suggestions from "./components/Suggestions";
 
 const App = () => {
 
@@ -83,6 +84,12 @@ const App = () => {
         <Route
           path="/health-metrics"
           element={session ? <HealthMetrics /> : <Navigate to="/" />}
+        />
+
+
+        <Route
+          path="/suggestions"
+          element={session ? <Suggestions /> : <Navigate to="/" />}
         />
       </Routes>
     </Router>

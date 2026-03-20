@@ -8,6 +8,7 @@ const Dashboard = () => {
   const [goals, setGoals] = useState([]);
   const [todayFitness, setTodayFitness] = useState(null);
   const [todayHealth, setTodayHealth] = useState(null);
+  const [allHealthMetrics, setAllHealthMetrics] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,6 +61,15 @@ const Dashboard = () => {
 
       setTodayHealth(healthData);
 
+      // 🔹 Fetch All Health Metrics for Weight Tracking
+      const { data: allHealthData } = await supabase
+        .from("health_metrics")
+        .select("weight, recorded_date")
+        .eq("profile_id", profileData.profile_id)
+        .order("recorded_date", { ascending: true });
+
+      setAllHealthMetrics(allHealthData || []);
+
     } catch (error) {
       console.log(error.message);
     } finally {
@@ -85,25 +95,90 @@ const Dashboard = () => {
     if (error) {
       alert(error.message);
     } else {
+      // Upsert health metric for today - DB trigger calculates BMI & metabolic_rate
+      const today = new Date().toISOString().split("T")[0];
+      const { data: existingMetric } = await supabase
+        .from("health_metrics")
+        .select("metric_id")
+        .eq("profile_id", profile.profile_id)
+        .eq("recorded_date", today)
+        .maybeSingle();
+
+      if (existingMetric) {
+        await supabase
+          .from("health_metrics")
+          .update({ weight: parseFloat(profile.weight) })
+          .eq("metric_id", existingMetric.metric_id);
+      } else {
+        await supabase
+          .from("health_metrics")
+          .insert([{
+            weight: parseFloat(profile.weight),
+            recorded_date: today,
+            profile_id: profile.profile_id
+          }]);
+      }
+
       alert("Profile Updated Successfully!");
+      fetchAllData(); // Refresh data to update progress
+    }
+  };
+
+  const deleteGoal = async (goalId) => {
+    const { error } = await supabase.from("goals").delete().eq("goal_id", goalId);
+    if (error) {
+      alert(error.message);
+    } else {
+      setGoals(goals.filter((g) => g.goal_id !== goalId));
     }
   };
 
   const calculateProgress = (goal) => {
-    if (!todayFitness) return 0;
+    if (!todayFitness && goal.goal_type !== "Weight loss") return 0;
 
     let currentValue = 0;
 
+    if (goal.goal_type === "Weight loss") {
+      // Find the most recent weight recorded on or before the start date
+      const sortedMetrics = [...allHealthMetrics].sort((a, b) => new Date(b.recorded_date) - new Date(a.recorded_date));
+      let startMetric = sortedMetrics.find(m => m.recorded_date <= goal.start_date);
+      if (!startMetric && allHealthMetrics.length > 0) {
+        startMetric = allHealthMetrics[0]; // fallback to oldest
+      }
+
+      let startWeight = startMetric && startMetric.weight ? startMetric.weight : (profile?.weight || 0);
+      const currentWeight = profile?.weight || 0;
+      let targetWeight = goal.target_value;
+
+      // Handle cases where user entered amount to lose (e.g. 1kg) instead of target absolute weight (e.g. 60kg)
+      if (targetWeight < 30) {
+        targetWeight = startWeight - targetWeight;
+      }
+
+      if (startWeight <= targetWeight) {
+        return currentWeight <= targetWeight ? 100 : 0;
+      }
+
+      const totalToLose = startWeight - targetWeight;
+      const totalLost = startWeight - currentWeight;
+
+      if (totalToLose <= 0) return 0;
+      if (totalLost <= 0) return 0;
+
+      const progress = (totalLost / totalToLose) * 100;
+      return Math.min(Math.max(progress, 0), 100);
+    }
+
     if (goal.goal_type === "Steps") {
-      currentValue = todayFitness.steps_count || 0;
+      currentValue = todayFitness?.steps_count || 0;
     }
 
     if (goal.goal_type === "Calories") {
-      currentValue = todayFitness.calories_burned || 0;
+      currentValue = todayFitness?.calories_burned || 0;
     }
 
     if (goal.goal_type === "Water intake") {
-      currentValue = todayFitness.water_intake || 0;
+      currentValue = todayFitness?.water_intake || 0;
     }
 
     if (!goal.target_value) return 0;
@@ -155,12 +230,12 @@ const Dashboard = () => {
 
             <div className="card">
               <h3>BMI</h3>
-              <p>{todayHealth?.bmi?.toFixed(2) || 0}</p>
+              <p>{todayHealth?.bmi ? todayHealth.bmi.toFixed(2) : "0.00"}</p>
             </div>
 
             <div className="card">
               <h3>Metabolic Rate</h3>
-              <p>{todayHealth?.metabolic_rate?.toFixed(2) || 0} kcal/day</p>
+              <p>{todayHealth?.metabolic_rate ? todayHealth.metabolic_rate.toFixed(2) : "0.00"} kcal/day</p>
             </div>
 
           </div>
@@ -172,11 +247,21 @@ const Dashboard = () => {
 
           {goals.map((goal) => {
             const progress = calculateProgress(goal);
+            const today = new Date().toISOString().split("T")[0];
+            const isEnded = goal.end_date && goal.end_date < today;
+
+            const unit = goal.goal_type === "Weight loss" ? "kg" :
+              goal.goal_type === "Steps" ? "steps/day" :
+                goal.goal_type === "Calories" ? "kcal/day" :
+                  goal.goal_type === "Water intake" ? "L/day" :
+                    goal.goal_type === "Muscle gain" ? "kg" : "";
 
             return (
               <div key={goal.goal_id} className="goal-card">
                 <h3>{goal.goal_type}</h3>
-                <p>Target: {goal.target_value}</p>
+                <p>Target: {goal.target_value} {unit}</p>
+                <p>Start Date: {goal.start_date}</p>
+                <p>End Date: {goal.end_date}</p>
                 <p>Progress: {progress.toFixed(1)}%</p>
 
                 <div className="progress-bar">
@@ -184,12 +269,18 @@ const Dashboard = () => {
                     className="progress-fill"
                     style={{
                       width: `${progress}%`,
-                      background: progress >= 100 ? "green" : "#007bff"
+                      background: progress >= 100 ? "green" : isEnded ? "gray" : "#007bff"
                     }}
                   ></div>
                 </div>
 
-                <p>Status: {progress >= 100 ? "Completed" : "Active"}</p>
+                <p>Status: {progress >= 100 ? "Completed" : isEnded ? "Ended" : "Active"}</p>
+                <button
+                  onClick={() => deleteGoal(goal.goal_id)}
+                  style={{ marginTop: "10px", background: "#ef4444", color: "white", padding: "6px 12px", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "0.9rem" }}
+                >
+                  Delete Goal
+                </button>
               </div>
             );
           })}

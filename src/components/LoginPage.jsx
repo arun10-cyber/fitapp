@@ -27,7 +27,6 @@ function LoginPage() {
   return (
     <div className="login-container">
 
-      {/* APP NAME */}
       <h1 className="app-title">Fitness Tracker</h1>
 
       <div className="login-card">

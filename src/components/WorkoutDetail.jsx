@@ -75,13 +75,11 @@ const WorkoutDetail = () => {
 
         const today = new Date().toISOString().split("T")[0];
 
-        const { error } = await supabase.from("workout").insert([{
-            profile_id: profileId,
-            workout_type: title,
-            intensity: intensity,
-            duration: duration,
-            date: today
-        }]);
+        const { error } = await supabase
+            .from("workout_recommendation")
+            .update({ profile_id: profileId })
+            .eq("workout_type", title)
+            .eq("intensity", intensity);
 
         if (error) {
             console.log("Workout save error:", error);

@@ -27,8 +27,6 @@ function SignupPage() {
 
   return (
   <div className="signup-container">
-
-    {/* APP NAME */}
     <h1 className="app-title">Fitness Tracker</h1>
 
     <div className="signup-card">

@@ -79,12 +79,12 @@ const Home = () => {
             {/* Calories Burned Card */}
             <div
               className="glass-card card-burn"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/fitness")}
               style={{ cursor: "pointer" }}
             >
               <div className="card-icon">🔥</div>
               <div className="card-body">
-                <h3>Calories Burned</h3>
+                <h3>Calculate Calories Burned</h3>
                 <ul className="card-list">
                   <li>Running — 300 kcal</li>
                   <li>Cycling — 250 kcal</li>

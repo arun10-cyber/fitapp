@@ -134,39 +134,85 @@ const Dashboard = () => {
   };
 
   const calculateProgress = (goal) => {
-    if (!todayFitness && goal.goal_type !== "Weight loss") return 0;
+    if (!todayFitness && goal.goal_type !== "Weight loss" && goal.goal_type !== "Muscle gain") return 0;
 
     let currentValue = 0;
 
-    if (goal.goal_type === "Weight loss") {
-      // Find the most recent weight recorded on or before the start date
+    if (goal.goal_type === "Weight loss" || goal.goal_type === "Muscle gain") {
+      const today = new Date().toISOString().split("T")[0];
       const sortedMetrics = [...allHealthMetrics].sort((a, b) => new Date(b.recorded_date) - new Date(a.recorded_date));
-      let startMetric = sortedMetrics.find(m => m.recorded_date <= goal.start_date);
+      const goalStartDate = new Date(goal.start_date);
+
+      // Find start metric: weight on or before goal start_date (using proper Date comparison)
+      let startMetric = sortedMetrics.find(m => new Date(m.recorded_date) <= goalStartDate);
+
+      // Fallback: use earliest metric
       if (!startMetric && allHealthMetrics.length > 0) {
-        startMetric = allHealthMetrics[0]; // fallback to oldest
+        startMetric = allHealthMetrics[0];
       }
 
-      let startWeight = startMetric && startMetric.weight ? startMetric.weight : (profile?.weight || 0);
-      const currentWeight = profile?.weight || 0;
-      let targetWeight = goal.target_value;
+      // Get latest metric as current weight
+      const latestMetric = sortedMetrics.length > 0 ? sortedMetrics[0] : null;
+      const currentWeight = latestMetric && latestMetric.weight ? latestMetric.weight : (profile?.weight || 0);
 
-      // Handle cases where user entered amount to lose (e.g. 1kg) instead of target absolute weight (e.g. 60kg)
-      if (targetWeight < 30) {
-        targetWeight = startWeight - targetWeight;
+      let startWeight = startMetric && startMetric.weight ? startMetric.weight : 0;
+
+      // CRITICAL FIX: If startWeight equals currentWeight (same-day overwrite),
+      // try to find an OLDER metric from a different day as the true start
+      if (startWeight === currentWeight && allHealthMetrics.length > 1) {
+        const olderMetric = sortedMetrics.find(m => {
+          const metricDate = new Date(m.recorded_date).toISOString().split("T")[0];
+          return metricDate !== today;
+        });
+        if (olderMetric && olderMetric.weight) {
+          startWeight = olderMetric.weight;
+        }
       }
 
-      if (startWeight <= targetWeight) {
-        return currentWeight <= targetWeight ? 100 : 0;
+      if (startWeight === 0) {
+        startWeight = profile?.weight || 0;
       }
 
-      const totalToLose = startWeight - targetWeight;
-      const totalLost = startWeight - currentWeight;
+      let targetValue = goal.target_value;
 
-      if (totalToLose <= 0) return 0;
-      if (totalLost <= 0) return 0;
+      if (goal.goal_type === "Weight loss") {
+        // Detect "amount to lose" (e.g. 1kg) vs absolute target (e.g. 54kg)
+        if (startWeight > 0 && targetValue < startWeight * 0.5 && targetValue < 30) {
+          targetValue = startWeight - targetValue;
+        }
 
-      const progress = (totalLost / totalToLose) * 100;
-      return Math.min(Math.max(progress, 0), 100);
+        if (startWeight <= targetValue) {
+          return currentWeight <= targetValue ? 100 : 0;
+        }
+
+        const totalToLose = startWeight - targetValue;
+        const totalLost = startWeight - currentWeight;
+
+        if (totalToLose <= 0) return 0;
+        if (totalLost <= 0) return 0;
+
+        const progress = (totalLost / totalToLose) * 100;
+        return Math.min(Math.max(progress, 0), 100);
+
+      } else {
+        // Muscle gain — reverse direction
+        if (startWeight > 0 && targetValue < startWeight * 0.5 && targetValue < 30) {
+          targetValue = startWeight + targetValue;
+        }
+
+        if (startWeight >= targetValue) {
+          return currentWeight >= targetValue ? 100 : 0;
+        }
+
+        const totalToGain = targetValue - startWeight;
+        const totalGained = currentWeight - startWeight;
+
+        if (totalToGain <= 0) return 0;
+        if (totalGained <= 0) return 0;
+
+        const progress = (totalGained / totalToGain) * 100;
+        return Math.min(Math.max(progress, 0), 100);
+      }
     }
 
     if (goal.goal_type === "Steps") {

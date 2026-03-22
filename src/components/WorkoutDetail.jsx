@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "./SupaCon";
 import Navbar from "./Navbar";
@@ -33,6 +33,64 @@ const WorkoutDetail = () => {
     const [duration, setDuration] = useState(initialFallback);
     const [timeLeft, setTimeLeft] = useState(initialFallback * 60);
     const [isActive, setIsActive] = useState(false);
+    const [profileId, setProfileId] = useState(null);
+    const [workoutSaved, setWorkoutSaved] = useState(false);
+    const workoutSavedRef = useRef(false);
+
+    // Fetch profile_id on mount
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                console.log("No authenticated user found");
+                return;
+            }
+
+            const { data: profile, error } = await supabase
+                .from("profile")
+                .select("profile_id")
+                .eq("user_id", user.id)
+                .single();
+
+            if (error) {
+                console.log("Profile fetch error:", error);
+            }
+            if (profile) {
+                console.log("Fetched profile_id:", profile.profile_id);
+                setProfileId(profile.profile_id);
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    // Save workout to database
+    const saveWorkout = async () => {
+        if (workoutSavedRef.current) return;
+        if (!profileId) {
+            alert("Profile not loaded. Please wait and try again.");
+            return;
+        }
+        workoutSavedRef.current = true;
+        setWorkoutSaved(true);
+
+        const today = new Date().toISOString().split("T")[0];
+
+        const { error } = await supabase.from("workout").insert([{
+            profile_id: profileId,
+            workout_type: title,
+            intensity: intensity,
+            duration: duration,
+            date: today
+        }]);
+
+        if (error) {
+            console.log("Workout save error:", error);
+            workoutSavedRef.current = false;
+            setWorkoutSaved(false);
+        } else {
+            alert("Workout completed & saved!");
+        }
+    };
 
     // Fetch and sync timeline limits 
     useEffect(() => {
@@ -63,9 +121,11 @@ const WorkoutDetail = () => {
             interval = setInterval(() => {
                 setTimeLeft(prev => prev - 1);
             }, 1000);
-        } else if (timeLeft === 0) {
+        } else if (timeLeft === 0 && isActive) {
             clearInterval(interval);
             setIsActive(false);
+            // Auto-save when timer completes
+            saveWorkout();
         }
         return () => clearInterval(interval);
     }, [isActive, timeLeft]);
@@ -108,9 +168,6 @@ const WorkoutDetail = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     </button>
                     <h2 className="header-title">{title} - {intensity}</h2>
-                    <button className="icon-menu-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                    </button>
                 </header>
 
                 <div className="detail-hero">
@@ -132,7 +189,6 @@ const WorkoutDetail = () => {
                 <div className="exercises-section">
                     <div className="section-header">
                         <h3>Exercises</h3>
-                        <span className="edit-action">Edit Sequence</span>
                     </div>
 
                     <div className="exercise-list-wrapper">
@@ -156,7 +212,9 @@ const WorkoutDetail = () => {
             </div>
 
             <div className="fixed-bottom-bar">
-                {isActive ? (
+                {workoutSaved ? (
+                    <span style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#22c55e' }}>✓ Workout Saved!</span>
+                ) : isActive ? (
                     <div className="timer-controls" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
                         <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#2563eb' }}>{formatTime(timeLeft)} Active</span>
                         <button 
@@ -165,11 +223,25 @@ const WorkoutDetail = () => {
                             style={{ background: '#f59e0b', color: '#fff', border: 'none', padding: '12px 30px', borderRadius: '30px', fontWeight: '600', cursor: 'pointer', fontSize: '1.1rem' }}>
                             Pause
                         </button>
+                        <button 
+                            onClick={saveWorkout} 
+                            style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '12px 30px', borderRadius: '30px', fontWeight: '600', cursor: 'pointer', fontSize: '1.1rem' }}>
+                            Complete
+                        </button>
                     </div>
                 ) : (
-                    <button className="primary-start-btn" onClick={() => setIsActive(true)}>
-                        {timeLeft < duration * 60 && timeLeft > 0 ? "Resume Workout" : "Start Workout"}
-                    </button>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <button className="primary-start-btn" onClick={() => setIsActive(true)}>
+                            {timeLeft < duration * 60 && timeLeft > 0 ? "Resume Workout" : "Start Workout"}
+                        </button>
+                        {timeLeft < duration * 60 && (
+                            <button 
+                                onClick={saveWorkout} 
+                                style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '12px 30px', borderRadius: '30px', fontWeight: '600', cursor: 'pointer', fontSize: '1.1rem' }}>
+                                Complete Workout
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

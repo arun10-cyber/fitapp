@@ -84,7 +84,7 @@ const HealthMetrics = () => {
         }]));
     }
 
-    // Also update master profile weight
+    
     await supabase
       .from("profile")
       .update({ weight: parseFloat(weight) })
@@ -119,13 +119,7 @@ const HealthMetrics = () => {
             <button type="submit" className="natural-btn">Save / Update</button>
           </form>
 
-          {todayRecord && (
-            <div className="results-box" style={{ marginTop: "30px", padding: "20px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-              <h3 style={{ margin: "0 0 15px 0", color: "#1e293b" }}>Calculated Results</h3>
-              <p style={{ margin: "5px 0", color: "#475569" }}><strong>BMI:</strong> {todayRecord.bmi ? todayRecord.bmi.toFixed(2) : "0.00"}</p>
-              <p style={{ margin: "5px 0", color: "#475569" }}><strong>Metabolic Rate:</strong> {todayRecord.metabolic_rate ? todayRecord.metabolic_rate.toFixed(2) : "0.00"} kcal/day</p>
-            </div>
-          )}
+
         </div>
       </div>
     </div>
